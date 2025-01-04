@@ -1,24 +1,26 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { AuthProvider } from 'react-oidc-context';
-import './index.css'
+import { Amplify } from 'aws-amplify';
 import App from './App.tsx'
+import './index.css'
+import './App.css'
 
-
-const cognitoAuthConfig = {
-  authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_I1okesKvz",
-  client_id: "49c63kjgrhrhm3d1vjmhmd4dsm",
-  redirect_uri: "http://localhost:5173/",
-  response_type: "code",
-  scope: "phone openid email",
-};
-
-console.log('authority',import.meta.env.authority);
+Amplify.configure({
+  Auth: {
+    Cognito: {
+      region: import.meta.env.VITE_APP_AWS_REGION,
+      userPoolId: import.meta.env.VITE_USER_POOL_ID,
+      userPoolClientId: import.meta.env.VITE_CLIENT_ID, 
+      loginWith: {
+        username: true,
+        email: true 
+      }
+    }
+  }
+});
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AuthProvider {...cognitoAuthConfig}>
-      <App />
-    </AuthProvider>
+    <App />
   </StrictMode>
 );

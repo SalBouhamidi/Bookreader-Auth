@@ -1,28 +1,29 @@
-import { Link } from "react-router-dom";
+import { Toaster, toast } from "sonner"
 import { useState } from "react";
-import { Toaster, toast } from "sonner";
-import { signIn, signUp, signOut, confirmSignUp } from 'aws-amplify/auth';
+import { confirmSignUp } from '@aws-amplify/auth';
 import { useNavigate } from "react-router-dom";
 
+export default function VerificationForm({email}) {
+    const navigate = useNavigate();
+    const [code, setCode] = useState('');
+    const handleVerification = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const { isSignUpComplete } = await confirmSignUp({
+                username: email,
+                confirmationCode: code
+            });
 
-export default function Login() {
-  const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const user = await signIn({username, password});
-      console.log('Login successful:', user);
-      if(user){
-        navigate('/')
-      }
-    } catch (err) {
-      console.log(err.message)
-      toast.error("Ops smth bad happend")
-    }
-  };
+            if (isSignUpComplete) {
+                console.log('Verification successful');
+                toast.success('Verification successful');
+                navigate('/')
+            }
+        } catch (error) {
+            console.error('Verification error:', error);
+            toast.error('Verify your code please')
+        }
+    };
 
     return (
         <>
@@ -62,19 +63,12 @@ export default function Login() {
                         <p className="!text-gray-600 font-semibold text-2xl ">
                             Welcome to <span className="rounded-md px-2" style={{ color: "#fca72c" }}>SPORTO</span>
                         </p>
-                        <form onSubmit={handleLogin} className="sm:w-2/3 w-full px-4 lg:px-0 mx-auto">
-                          <div className="pb-2 pt-4">
-                                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} name="email" id="email" placeholder="Email" className="block w-full p-3  rounded-md border-lime-50  text-gray-600 placeholder-gray-600" style={{ background: "#fcf3e4" }} />
-                            </div>
+                        <form onSubmit={handleVerification} className="sm:w-2/3 w-full px-4 lg:px-0 mx-auto">
                             <div className="pb-2 pt-4">
-                                <input value={password} onChange={(e) => setPassword(e.target.value)} className="block w-full p-3 rounded-md border-lime-50  text-gray-600 placeholder-gray-600" style={{ background: "#fcf3e4" }} type="password" name="password" id="password" placeholder="Password" />
-                            </div>
-
-                            <div className="text-right text-gray-600 ">
-                                <Link to="/register">You already have an account ? <span className="hover:underline hover:text-amber-600">sign in</span></Link>
+                                <input type="text" name="verificationCode" id="verificationCode" placeholder="Enter verification code" value={code} onChange={(e) => setCode(e.target.value)} className="block w-full p-3 rounded-md border-lime-50 text-gray-600 placeholder-gray-600" style={{ background: "#fcf3e4" }} maxLength={6} required/>
                             </div>
                             <div className=" pb-2 pt-4 flex justify-center">
-                                <button className=" block p-2 px-3 text-lime-50 rounded-lg hover:bg-amber-600 focus:outline-none" style={{ background: "#fca72c" }}>Sign Up</button>
+                                <button className=" block p-2 px-3 text-lime-50 rounded-lg hover:bg-amber-600 focus:outline-none" style={{ background: "#fca72c" }}>Confirm</button>
                             </div>
                             <div className="p-4 text-center right-0 left-0 flex justify-center space-x-4 mt-16 lg:hidden ">
                                 <a href="#">
@@ -91,7 +85,6 @@ export default function Login() {
                     </div>
                 </div>
             </section>
-
         </>
-    );
+    )
 }
